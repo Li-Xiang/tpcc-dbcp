@@ -1,0 +1,74 @@
+1. download jdbc
+Download derby jdbc driver(http://db.apache.org/derby/derby_downloads.html), and extract derbyclient.jar to lib directory.
+
+2. create tpcc database
+
+2.1. start derby in Network mode. 
+# For Linux/Unix 
+export DERBY_OPTS=""
+export DERBY_OPTS="$DERBY_OPTS -Dderby.drda.host=0.0.0.0"
+export DERBY_OPTS="$DERBY_OPTS -Dderby.drda.portNumber=1527"
+export DERBY_OPTS="$DERBY_OPTS -Dderby.system.home=/data/derby"  # --> your database storage path
+export DERBY_OPTS="$DERBY_OPTS -Dderby.stream.error.logSeverityLevel=0"
+startNetworkServer -noSecurityManager
+
+# For Windows
+set DERBY_OPTS=-Dderby.drda.host=0.0.0.0
+set DERBY_OPTS=%DERBY_OPTS% -Dderby.drda.portNumber=1527
+set DERBY_OPTS=%DERBY_OPTS% -Dderby.system.home=D:/Data/derby/
+set DERBY_OPTS=%DERBY_OPTS% -Dderby.stream.error.logSeverityLevel=0
+startNetworkServer -noSecurityManager
+
+2.2. create database and user.
+
+$ ij
+ij> connect 'jdbc:derby://127.0.0.1:1527/tpcc;create=true;territory=en_US;collation=TERRITORY_BASED';
+
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.defaultConnectionMode','noAccess');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.connection.requireAuthentication','true');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.authentication.provider','BUILTIN');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.user.tpcc', 'tpcc_passwd');    
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.fullAccessUsers', 'tpcc');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.sqlAuthorization','true');
+
+3. create tpcc schema.
+$ ij
+ij> connect 'jdbc:derby://127.0.0.1:1527/tpcc;user=tpcc;password=tpcc_passwd';
+ij> run 'D:\Build\tpcc\schema\derby\create_table.sql';
+
+4. perpare datasource config file.
+$ notepad dataSource.json
+{
+  "derby-ds-1": {
+    "driverClassName": "org.apache.derby.jdbc.ClientDriver",
+    "url": "jdbc:derby://127.0.0.1:1527/D:/Data/derby/tpcc",
+    "username": "tpcc",
+    "password": "tpcc_passwd",
+    "maxWaitMillis": "60000",
+    "validationQuery": "values 1",
+    "initialSize": "1",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "maxIdle": "4",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "maxTotal": "8",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+5. load tpcc data
+
+$ tpcc.cmd--datasource derby-ds-1 --warehouses 5 --threads 10 load
+
+Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
+
+6. add FK and index
+$ ij
+ij> connect 'jdbc:derby://127.0.0.1:1527/tpcc;user=tpcc;password=tpcc_passwd';
+ij> run 'D:\Build\tpcc\schema\derby\add_fkey_idx.sql'
+
+7. start TPC-C test
+$ ./tpcc.sh --datasource derby-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600

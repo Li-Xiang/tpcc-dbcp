@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<project name="TPC-C for DBCP" basedir="." default="build-jar">
+	<description>TPC-C workload generator</description>
+	<property environment="env" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="java.lib.dir" value="${env.JAVA_HOME}/lib" />
+	<property name="build.dir" value="${basedir}/bin" />
+	<property name="build.classes.dir" value="${build.dir}" />
+
+	<property name="dist.jar" value="${basedir}/tpcc.jar" />
+	<property name="manifest.main.class" value="org.littlestar.tpcc.Tpcc" /> 
+	<property name="manifest.specification.title" value="TPC-C for DBCP" /> 
+	<property name="manifest.version" value="1.0" /> 
+	
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="javac.optimize" value="false" />
+	<property name="javac.debug" value="true" />
+	<property name="javac.deprecation" value="false" />
+	<property name="javac.encoding" value="UTF-8" />
+	
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${java.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+	<manifestclasspath jarfile="${base.jar}" property="manifest.classpath">
+      <classpath>
+        <fileset dir="${lib.dir}">
+          <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${basedir}">
+          <include name="*.jar"/>
+        </fileset>
+      </classpath>
+    </manifestclasspath>
+	
+	<target name="init" description="Initialize build and dist folders">
+		<mkdir dir="${build.classes.dir}" />
+	</target>
+
+	<target name="clean" depends="init" description="removes build and dist folders">
+		<delete dir="${build.dir}" />
+	</target>
+	
+	<target depends="clean" name="cleanall" />
+	
+	<target name="compile" depends="init">
+		<javac debug="${javac.debug}" 
+			   debuglevel="${debuglevel}" 
+			   includeantruntime="false" 
+			   destdir="${build.classes.dir}" 
+			   srcdir="${src.dir}" 
+			   optimize="${javac.optimize}" 
+			   deprecation="${javac.deprecation}" 
+			   encoding="${javac.encoding}">
+			<classpath refid="classpath" />
+			<compilerarg value="-Xlint:unchecked" />
+			<compilerarg value="-Xlint:deprecation" />
+		</javac>
+	</target>
+	
+	<target name="build-jar" depends="compile" description="Generate the jar file.">
+		<jar destfile="${dist.jar}">
+			<fileset dir="${build.classes.dir}" />
+			<manifest>
+				<attribute name="Main-Class" value="${manifest.main.class}" />
+				<attribute name="Specification-Title" value="${manifest.specification.title}" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+				<attribute name="Manifest-Version" value="${manifest.version}" />
+			</manifest>
+		</jar>
+	</target>
+</project>

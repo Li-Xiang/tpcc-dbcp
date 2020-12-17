@@ -1,0 +1,54 @@
+1. download jdbc
+Download mssql jdbc driver from Microsoft, and extract mssql-jdbc-*.jar to lib directory.
+
+2. create database and user
+
+$ sqlcmd -S tcp:127.0.0.1,1433 -U sa
+
+create database tpcc;
+go
+use tpcc;
+go
+create login tpcc_user with password='tpcc_passwd', default_database=tpcc;
+create user tpcc_user for login tpcc_user with default_schema=dbo;
+exec sp_addrolemember 'db_owner', 'tpcc_user';
+go
+
+3. create tpcc tables.
+
+$ sqlcmd -S tcp:192.168.56.1,1433 -U tpcc_user -P tpcc_passwd -i D:\Build\tpcc\schema\mssql\create_table.sql
+
+4. perpare datasource config file.
+{
+  "mssql-ds-1": {
+    "driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "url": "jdbc:sqlserver://192.168.1.163:1433;databaseName=tpcc",
+    "username": "tpcc_user",
+    "password": "tpcc_passwd",
+    "maxWaitMillis": "60000",
+    "validationQuery": "select 1",
+    "initialSize": "1",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "maxIdle": "4",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "maxTotal": "8",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+5. load tpcc data
+
+$ tpcc.cmd --datasource mssql-ds-1 --warehouses 5 --threads 10 load
+
+Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
+
+8. add FK and index
+
+sqlcmd -S tcp:192.168.56.1,1433 -U tpcc_user -P tpcc_passwd -i D:\Build\tpcc\schema\mssql\add_fkey_idx.sql
+
+6. start TPC-C test
+$ ./tpcc.sh --datasource mssql-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600

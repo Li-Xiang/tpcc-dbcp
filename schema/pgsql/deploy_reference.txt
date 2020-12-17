@@ -1,0 +1,48 @@
+1. download jdbc
+Download postgres jdbc driver(https://jdbc.postgresql.org/), and extract postgresql-*.jar to lib directory.
+
+2. create tpcc user and database
+$ psql postgres
+postgres=# create user tpcc_user with password 'tpcc_passwd';
+postgres=# create database tpcc with owner='tpcc_user' encoding='UTF8';
+postgres=# grant all privileges on database tpcc to tpcc_user;
+
+3. create tpcc tables.
+$ psql -U tpcc_user -h 192.168.56.1 -W tpcc
+tpcc=> \i 'D:/Build/tpcc/schema/pgsql/create_table.sql'
+
+4. perpare datasource config file.
+$ vi dataSource.json
+{
+  "pgsql-ds-1": {
+    "driverClassName": "org.postgresql.Driver",
+    "url": "jdbc:postgresql://127.0.0.1:5432/tpcc",
+    "username": "tpcc_user",
+    "password": "tpcc_passwd",
+	"maxTotal": "8",
+	"initialSize": "1",
+	"maxIdle": "4",
+    "maxWaitMillis": "60000",
+    "validationQuery": "select 1",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+5. load tpcc data
+
+# tpcc.cmd --datasource pgsql-ds-1 --warehouses 5 --threads 10 load
+
+Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
+
+6. add FK and index
+$ psql -U tpcc_user -h 192.168.56.1 -W tpcc
+tpcc=> \i 'D:/Build/tpcc/schema/pgsql/add_fkey_idx.sql'
+
+7. start TPC-C test
+$ ./tpcc.sh --datasource pgsql-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600

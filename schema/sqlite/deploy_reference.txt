@@ -1,0 +1,41 @@
+Note: support single-thread (--threads 1) test only.
+
+1. download jdbc
+Download mysql jdbc driver(https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/), and extract sqlite-jdbc-*.jar to lib directory.
+
+2. create tpcc database and tables
+
+$ sqlite3.exe D:\Data\sqlite\tpcc.db
+sqlite> .read "D:/Build/tpcc/schema/sqlite/create_table.sql"
+sqlite> .tables
+sqlite> .quit
+
+3. perpare datasource config file.
+$ vi dataSource.json
+{
+  "sqlite-ds-1": {
+    "driverClassName": "org.sqlite.JDBC",
+    "url": "jdbc:sqlite:D:\\Data\\sqlite\\tpcc.db",
+    "connectionProperties": "journal_mode=WAL;wal_autocheckpoint=6000;synchronous=NORMAL;cache_size=8000",
+    "maxTotal": "8",
+    "initialSize": "1",
+    "maxIdle": "4",
+    "maxWaitMillis": "60000",
+    "validationQuery": "select 1",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+4. load tpcc data
+
+# tpcc.sh --datasource sqlite-ds-1 --warehouses 2 --threads 1 load
+Note: SQLite doesn't support the ADD CONSTRAINT variant of the ALTER TABLE command. Foreign key is define in table  create  time. 
+
+5. start TPC-C test
+$ ./tpcc.sh --datasource sqlite-ds-1 --warehouses 10 --warmup 60 --threads 1 --measure-time 3600

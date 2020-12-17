@@ -1,0 +1,59 @@
+1. download jdbc
+Download mssql jdbc driver from (https://www.ibm.com/support/pages/db2-jdbc-driver-versions-and-downloads), and extract db2jcc4.jar to lib directory.
+
+2. create database and user
+
+# groupadd db2group
+# useradd -g db2group tpcc
+# passwd tpcc
+
+# su - db2inst1
+$ db2 
+db2 => create db tpcc on '/data/db2/10.5' using codeset UTF-8 territory us collate using system pagesize 8192
+db2 => connect to tpcc 
+db2 => grant bindadd on database to user tpcc
+db2 => grant connect on database to user tpcc
+db2 => grant load on database to user tpcc
+db2 => quit
+
+
+3. create tpcc tables.
+
+$ db2 connect to tpcc user tpcc using tpcc_passwd
+$ db2 -tvf /data/db2/create_table.sql 
+
+4. perpare datasource config file.
+{
+  "db2-ds-1": {
+    "driverClassName": "com.ibm.db2.jcc.DB2Driver",
+    "url": "jdbc:db2://192.168.56.60:50000/tpcc",
+    "username": "tpcc",
+    "password": "tpcc_passwd",
+    "maxWaitMillis": "60000",
+    "validationQuery": "select 1 from sysibm.sysdummy1",
+    "initialSize": "1",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "maxIdle": "4",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "maxTotal": "8",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+5. load tpcc data
+
+$ db2 connect to tpcc user tpcc using tpcc_passwd
+$ db2 -tvf /data/db2/add_fkey_idx.sql 
+
+Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
+
+6. add FK and index
+
+sqlcmd -S tcp:192.168.56.1,1433 -U tpcc_user -P tpcc_passwd -i D:\Build\tpcc\schema\mssql\add_fkey_idx.sql
+
+6. start TPC-C test
+$ ./tpcc.sh --datasource db2-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600

@@ -1,0 +1,54 @@
+1. download jdbc
+Download oracle jdbc driver(https://www.oracle.com/database/technologies/instant-client/downloads.html), and extract ojdbcX.jar to lib directory.
+
+2. create tpcc user
+
+$ sqlplus / as sysdba
+SQL> create user tpcc identified by tpcc_passwd
+default tablespace users
+temporary tablespace temp
+quota unlimited on users;
+    
+SQL> grant unlimited tablespace to tpcc;
+SQL> grant connect to tpcc;
+SQL> grant resource to tpcc;
+
+
+3. create tpcc tables.
+SQL> connect tpcc/tpcc_passwd
+SQL> @/home/oracle/tpcc/create_table.sql
+
+4. perpare datasource config file.
+$ vi dataSource.json
+{
+  "oracle-ds-1": {
+    "driverClassName": "oracle.jdbc.driver.OracleDriver",
+    "url": "jdbc:oracle:thin:@//192.168.6.11:1521/db112",
+    "username": "tpcc",
+    "password": "tpcc_passwd",
+    "maxTotal": "10",
+    "maxIdle": "4",
+    "initialSize": "1",
+    "maxWaitMillis": "60000",
+    "validationQuery": "select 1 from dual",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+5. load tpcc data
+
+$ tpcc.cmd --datasource oracle-ds-1 --warehouses 5 --threads 10 load
+
+Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
+
+6. add FK and index
+$ sqlplus tpcc/tpcc_passwd @/home/oracle/tpcc/add_fkey_idx.sql
+
+7. start TPC-C test
+$ ./tpcc.sh --datasource oracle-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600

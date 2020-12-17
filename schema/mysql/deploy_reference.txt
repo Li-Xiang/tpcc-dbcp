@@ -1,0 +1,59 @@
+1. download jdbc
+Download mysql jdbc driver(https://dev.mysql.com/downloads/connector/j/), and extract  mysql-connector-java-*.jar to lib directory.
+
+2. create tpcc database
+# cd schema/mysql
+# mysql -u root -p
+mysql> create database tpcc default character set utf8mb4 collate utf8mb4_unicode_ci;
+
+3. create database user tpcc_user. 
+mysql> create user 'tpcc_user'@'%' identified by 'tpcc_passwd';
+
+# for mysql 8
+# mysql> create user 'tpcc_user'@'%' identified with mysql_native_password by 'tpcc_passwd'; 
+# for drop user  
+# mysql> drop user 'tpcc_user'@'%';
+
+4. grant all tpcc datatabase privileges to tpcc_user.
+mysql> grant all privileges on tpcc.* to 'tpcc_user'@'%' with grant option;
+
+5. create tpcc tables.
+mysql> use tpcc;
+mysql> source create_table.sql
+
+6. perpare datasource config file.
+$ vi dataSource.json
+{
+  "mysql-ds-1": {
+    "driverClassName": "com.mysql.cj.jdbc.Driver",
+    "url": "jdbc:mysql://192.168.56.224/tpcc",
+    "username": "tpcc_user",
+    "password": "tpcc_passwd",
+    "connectionProperties": "useSSL=false;useUnicode=true;characterEncoding=UTF-8;autoReconnect=true;rewriteBatchedStatements=true",
+    "validationQuery": "select 1",
+    "maxTotal": "10",
+    "initialSize": "1",
+    "maxIdle": "5",
+    "maxWaitMillis": "60000",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+7. load tpcc data
+
+# tpcc.sh --datasource mysql-ds-1 --warehouses 5 --threads 10 load
+
+Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
+
+8. add FK and index
+mysql> use tpcc;
+mysql> source add_fkey_idx.sql
+
+9. start TPC-C test
+$ ./tpcc.sh --datasource mysql-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600
