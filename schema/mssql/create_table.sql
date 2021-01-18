@@ -8,7 +8,7 @@ create table warehouse (
   w_city nvarchar(20), 
   w_state nchar(2), 
   w_zip nchar(9), 
-  w_tax decimal(4,2), 
+  w_tax decimal(4,4), 
   w_ytd decimal(12,2),
   constraint warehouse_pk primary key (w_id)
 );
@@ -23,7 +23,7 @@ create table district (
   d_city nvarchar(20), 
   d_state nchar(2), 
   d_zip nchar(9), 
-  d_tax decimal(4,2), 
+  d_tax decimal(4,4), 
   d_ytd decimal(12,2), 
   d_next_o_id int,
   constraint district_pk primary key (d_w_id, d_id)
@@ -47,7 +47,7 @@ create table customer (
   c_since datetime2, 
   c_credit nchar(2), 
   c_credit_lim bigint, 
-  c_discount decimal(4,2), 
+  c_discount decimal(4,4), 
   c_balance decimal(12,2), 
   c_ytd_payment decimal(12,2), 
   c_payment_cnt smallint, 
@@ -136,4 +136,9 @@ create table stock (
   s_data nvarchar(50),
   constraint stock_pk primary key (s_w_id, s_i_id)
 );
+go
+
+-- 'idx_stock_1' and 'idx_district_1' use for UPDLOCK, please don't changed the index name;
+CREATE INDEX idx_stock_1 ON stock (s_i_id,s_w_id);
+CREATE INDEX idx_district_1 ON district (d_id,d_w_id);
 go

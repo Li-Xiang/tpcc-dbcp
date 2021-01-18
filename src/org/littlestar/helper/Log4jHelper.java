@@ -125,7 +125,7 @@ public class Log4jHelper {
 		return withRollingFileAppender(level, layout, logFile, maxFileSize, maxFilesKeep);
 	}
 	
-	public void init() {
+	public void setup() {
 		context.updateLoggers();
 	}
 }

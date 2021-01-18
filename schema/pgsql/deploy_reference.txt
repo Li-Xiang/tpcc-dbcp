@@ -5,7 +5,9 @@ Download postgres jdbc driver(https://jdbc.postgresql.org/), and extract postgre
 $ psql postgres
 postgres=# create user tpcc_user with password 'tpcc_passwd';
 postgres=# create database tpcc with owner='tpcc_user' encoding='UTF8';
+postgres=# \c tpcc
 postgres=# grant all privileges on database tpcc to tpcc_user;
+postgres=# grant all privileges on all tables in schema public to tpcc_user;
 
 3. create tpcc tables.
 $ psql -U tpcc_user -h 192.168.56.1 -W tpcc
@@ -19,9 +21,9 @@ $ vi dataSource.json
     "url": "jdbc:postgresql://127.0.0.1:5432/tpcc",
     "username": "tpcc_user",
     "password": "tpcc_passwd",
-	"maxTotal": "8",
-	"initialSize": "1",
-	"maxIdle": "4",
+    "maxTotal": "300",
+    "initialSize": "1",
+    "maxIdle": "300",
     "maxWaitMillis": "60000",
     "validationQuery": "select 1",
     "removeAbandonedOnBorrow": "true",
@@ -44,5 +46,8 @@ Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
 $ psql -U tpcc_user -h 192.168.56.1 -W tpcc
 tpcc=> \i 'D:/Build/tpcc/schema/pgsql/add_fkey_idx.sql'
 
-7. start TPC-C test
+7. Run a manual VACUUM ANALYZE on the database:
+$ vacuumdb -d tpcc -z
+
+8. start TPC-C test
 $ ./tpcc.sh --datasource pgsql-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600

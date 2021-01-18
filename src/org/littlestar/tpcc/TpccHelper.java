@@ -124,8 +124,8 @@ public interface TpccHelper {
 		}
 		
 		double totalTxs = noTxs + pyTxs + osTxs + dlTxs + slTxs;
-		double totalRt  = noRt  + pyRt  + osRt  + dlRt  + slRt;
-		double totalTps = (totalTxs > 0) ? ((double) totalRt / totalTxs) : 0.0D;
+		//double totalRt  = noRt  + pyRt  + osRt  + dlRt  + slRt;
+		double totalTps = (measureTime > 0) ? ((double) totalTxs / measureTime) : 0.0D;
 		double totalTpmc = totalTps * 60.0D;
 		//// New-Order
 		double noTps = (measureTime > 0) ? ((double) noTxs / measureTime) : 0.0D;

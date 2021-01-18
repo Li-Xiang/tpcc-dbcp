@@ -26,8 +26,8 @@ $ vi dataSource.json
     "url": "jdbc:oracle:thin:@//192.168.6.11:1521/db112",
     "username": "tpcc",
     "password": "tpcc_passwd",
-    "maxTotal": "10",
-    "maxIdle": "4",
+    "maxTotal": "300",
+    "maxIdle": "300",
     "initialSize": "1",
     "maxWaitMillis": "60000",
     "validationQuery": "select 1 from dual",
@@ -49,6 +49,8 @@ Note: tpcc threads count must not exceed 'maxTotal' which in dataSource.json.
 
 6. add FK and index
 $ sqlplus tpcc/tpcc_passwd @/home/oracle/tpcc/add_fkey_idx.sql
-
+begin
+   dbms_stats.gather_schema_stats(ownname => 'SYSTEM',estimate_percent => 100, method_opt => 'for all columns size skewonly',degree => 4,cascade => true,no_invalidate => FALSE);
+end;
 7. start TPC-C test
 $ ./tpcc.sh --datasource oracle-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600

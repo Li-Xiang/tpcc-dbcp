@@ -13,94 +13,117 @@ import org.littlestar.tpcc.dbo.WarehouseDbo;
 
 public class TpccStatements {
 	public static String loadItemsStmt() throws Throwable {
-		final String sqlText  = "insert into " + ItemDbo.TABLE_NAME  + " values (?,?,?,?,?)";
+		String sqlText  = "insert into " + ItemDbo.TABLE_NAME  + " values (?,?,?,?,?)";
 		return sqlText;
 	}
 	
 	public static String loadWarehouseStmt() throws Throwable {
-		final String sqlText = "insert into " + WarehouseDbo.TABLE_NAME + " values (?,?,?,?,?,?,?,?,?)";
+		String sqlText = "insert into " + WarehouseDbo.TABLE_NAME + " values (?,?,?,?,?,?,?,?,?)";
 		return sqlText;
 	}
 	
 	public static String loadStockStmt() throws Throwable {
-		final String sqlText  = "insert into " + StockDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		String sqlText  = "insert into " + StockDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		return sqlText;
 	}
 	
 	public static String loadDistrictStmt() throws Throwable {
-		final String sqlText  = "insert into " + DistrictDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?,?,?,?)";
+		String sqlText  = "insert into " + DistrictDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?,?,?,?)";
 		return sqlText;
 	}
 	
 	public static String loadCustomerStmt() throws Throwable {
-		final String sqlText = "insert into " + CustomerDbo.TABLE_NAME + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		String sqlText = "insert into " + CustomerDbo.TABLE_NAME + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		return sqlText;
 
 	}
 	
 	public static String loadHistoryStmt() throws Throwable {
-		final String sqlText  = "insert into " + HistoryDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?)";
+		String sqlText  = "insert into " + HistoryDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?)";
 		return sqlText;
 	}
 	
 	public static String loadOrdersStmt() throws Throwable {
-		final String sqlText  = "insert into " + OrdersDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?)";
+		String sqlText  = "insert into " + OrdersDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?)";
 		return sqlText;
 	}
 	
 	public static String loadNewOrdersStmt() throws Throwable {
-		final String sqlText  = "insert into " + NewOrdersDbo.TABLE_NAME  + " values (?,?,?)";
-		return sqlText;
+		DBMS dbms = TpccContext.getContext().getDBMS();
+		if(dbms.equals(DBMS.IGNITE)) {
+			// For Error: Table must have at least one non PRIMARY KEY column. (state=0A000,code=1002)
+			// Add a placehold column to fix it.
+			return "insert into " + NewOrdersDbo.TABLE_NAME  + " values (?,?,?,'TRUE')";
+		} else {
+			return "insert into " + NewOrdersDbo.TABLE_NAME  + " values (?,?,?)";
+		}
 	}
 	
 	public static String loadOrderLineStmt() throws Throwable {
-		final String sqlText  = "insert into " + OrderLineDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?,?,?)";
+		String sqlText  = "insert into " + OrderLineDbo.TABLE_NAME  + " values (?,?,?,?,?,?,?,?,?,?)";
 		return sqlText;
 	}
+	
 	
 	public static String checkItemsStmt() {
-		final String sqlText = "select count(*) as cnt from " + ItemDbo.TABLE_NAME;
-		return sqlText;
+		return "select count(*) as cnt from " + ItemDbo.TABLE_NAME;
 	}
-	
+
 	public static String checkWarehouseStmt() {
-		final String sqlText = "select count(*) as cnt from " + WarehouseDbo.TABLE_NAME;
-		return sqlText;
+		return "select count(*) as cnt from " + WarehouseDbo.TABLE_NAME;
 	}
-	
+
 	public static String checkStockStmt() {
-		final String sqlText = "select count(*) as cnt from " + StockDbo.TABLE_NAME;
-		return sqlText;
+		DBMS dbms = TpccContext.getContext().getDBMS();
+		if (dbms.equals(DBMS.Oracle)) {
+			return "select /*+ parallel(t, 8) */ count(*) as cnt from " + StockDbo.TABLE_NAME + " t";
+		} else {
+			return "select count(*) as cnt from " + StockDbo.TABLE_NAME;
+		}
 	}
 	
 	public static String checkDistrictStmt() {
-		final String sqlText = "select count(*) as cnt from " + DistrictDbo.TABLE_NAME;
-		return sqlText;
+		return "select count(*) as cnt from " + DistrictDbo.TABLE_NAME;
 	}
 	
 	public static String checkCustomerStmt() {
-		final String sqlText = "select count(*) as cnt from " + CustomerDbo.TABLE_NAME;
-		return sqlText;
+		DBMS dbms = TpccContext.getContext().getDBMS();
+		if (dbms.equals(DBMS.Oracle)) {
+			return "select /*+ parallel(t, 8) */ count(*) as cnt from " + CustomerDbo.TABLE_NAME +" t";
+		} else {
+			return "select count(*) as cnt from " + CustomerDbo.TABLE_NAME;
+		}
 	}
 	
 	public static String checkHistoryStmt() {
-		final String sqlText = "select count(*) as cnt from " + HistoryDbo.TABLE_NAME;
-		return sqlText;
+		DBMS dbms = TpccContext.getContext().getDBMS();
+		if (dbms.equals(DBMS.Oracle)) {
+			return "select /*+ parallel(t, 8) */ count(*) as cnt from " + HistoryDbo.TABLE_NAME + " t";
+		} else {
+			return "select count(*) as cnt from " + HistoryDbo.TABLE_NAME;
+		}
 	}
 	
 	public static String checkOrdersStmt() {
-		final String sqlText = "select count(*) as cnt from " + OrdersDbo.TABLE_NAME;
-		return sqlText;
+		DBMS dbms = TpccContext.getContext().getDBMS();
+		if (dbms.equals(DBMS.Oracle)) {
+			return "select /*+ parallel(t, 8) */ count(*) as cnt from " + OrdersDbo.TABLE_NAME + " t";
+		} else {
+			return "select count(*) as cnt from " + OrdersDbo.TABLE_NAME;
+		}
 	}
 	
 	public static String checkNewOrdersStmt() {
-		final String sqlText = "select count(*) as cnt from " + NewOrdersDbo.TABLE_NAME;
-		return sqlText;
+		return "select count(*) as cnt from " + NewOrdersDbo.TABLE_NAME;
 	}
 	
 	public static String checkOrderLineStmt() {
-		final String sqlText = "select count(*) as cnt from " + OrderLineDbo.TABLE_NAME;
-		return sqlText;
+		DBMS dbms = TpccContext.getContext().getDBMS();
+		if (dbms.equals(DBMS.Oracle)) {
+			return "select /*+ parallel(t, 8) */ count(*) as cnt from " + OrderLineDbo.TABLE_NAME + " t";
+		} else {
+			return "select count(*) as cnt from " + OrderLineDbo.TABLE_NAME;
+		}
 	}
 	
 	
@@ -115,12 +138,22 @@ public class TpccStatements {
 	 * @return
 	 */
 	public static String newOrderStmt1() {
-		final String sqlText = "select " + CustomerDbo.CN_C_DISCOUNT + ", " + CustomerDbo.CN_C_LAST + ","
-				+ CustomerDbo.CN_C_CREDIT + ", " + WarehouseDbo.CN_W_TAX + " from " + CustomerDbo.TABLE_NAME + ", "
-				+ WarehouseDbo.TABLE_NAME + " where " + WarehouseDbo.CN_W_ID + " = ? and " + CustomerDbo.CN_C_W_ID
-				+ " = " + WarehouseDbo.CN_W_ID + " and " + CustomerDbo.CN_C_D_ID + " = ? and " + CustomerDbo.CN_C_ID + " = ?";
-
-		return sqlText;
+		DBMS dbms = TpccContext.getContext().getDBMS();
+		if (dbms.equals(DBMS.IGNITE)) {
+			String sqlText = "select " + CustomerDbo.CN_C_DISCOUNT + ", " + CustomerDbo.CN_C_LAST + ","
+					+ CustomerDbo.CN_C_CREDIT + ", " + WarehouseDbo.CN_W_TAX + " from " + CustomerDbo.TABLE_NAME + " left join "
+					+ WarehouseDbo.TABLE_NAME + " on "+ CustomerDbo.CN_C_W_ID + " = " + WarehouseDbo.CN_W_ID
+					+" where " + CustomerDbo.CN_C_W_ID + " = ? and " + CustomerDbo.CN_C_D_ID + " = ? and " + CustomerDbo.CN_C_ID
+					+ " = ?";
+			return sqlText;
+		} else {
+			String sqlText = "select " + CustomerDbo.CN_C_DISCOUNT + ", " + CustomerDbo.CN_C_LAST + ","
+					+ CustomerDbo.CN_C_CREDIT + ", " + WarehouseDbo.CN_W_TAX + " from " + CustomerDbo.TABLE_NAME + ", "
+					+ WarehouseDbo.TABLE_NAME + " where " + WarehouseDbo.CN_W_ID + " = ? and " + CustomerDbo.CN_C_W_ID
+					+ " = " + WarehouseDbo.CN_W_ID + " and " + CustomerDbo.CN_C_D_ID + " = ? and " + CustomerDbo.CN_C_ID
+					+ " = ?";
+			return sqlText;
+		}
 	}
 	
 	/**
@@ -131,9 +164,6 @@ public class TpccStatements {
 	 * @return
 	 */
 	public static String newOrderStmt2() {
-		final String sqlText = "select " + DistrictDbo.CN_D_NEXT_O_ID + ", " + DistrictDbo.CN_D_TAX + " from "
-				+ DistrictDbo.TABLE_NAME + " where " + DistrictDbo.CN_D_ID + " = ? and " + DistrictDbo.CN_D_W_ID
-				+ " = ? for update"; 
 		DBMS dbms = TpccContext.getContext().getDBMS();
 		if (dbms.equals(DBMS.MSSQL)) { //mssql not support select ... for update.
 			final String sqlTextMssql = "select " + DistrictDbo.CN_D_NEXT_O_ID + ", " + DistrictDbo.CN_D_TAX + " from "
@@ -146,7 +176,15 @@ public class TpccStatements {
 					+ DistrictDbo.TABLE_NAME + " where " + DistrictDbo.CN_D_ID + " = ? and " + DistrictDbo.CN_D_W_ID
 					+ " = ?";
 			return sqlTextSqlite;
+		} else if(dbms.equals(DBMS.IGNITE)) { //Exception: SELECT FOR UPDATE query requires transactional cache with MVCC enabled.
+			final String sqlTextSqlite = "select " + DistrictDbo.CN_D_NEXT_O_ID + ", " + DistrictDbo.CN_D_TAX + " from "
+					+ DistrictDbo.TABLE_NAME + " where " + DistrictDbo.CN_D_ID + " = ? and " + DistrictDbo.CN_D_W_ID
+					+ " = ?";
+			return sqlTextSqlite;
 		} else {
+			final String sqlText = "select " + DistrictDbo.CN_D_NEXT_O_ID + ", " + DistrictDbo.CN_D_TAX + " from "
+					+ DistrictDbo.TABLE_NAME + " where " + DistrictDbo.CN_D_ID + " = ? and " + DistrictDbo.CN_D_W_ID
+					+ " = ? for update"; 
 			return sqlText;
 		}
 	}
@@ -214,14 +252,6 @@ public class TpccStatements {
 	 * @return
 	 */
 	public static String newOrderStmt7() {
-		final String sqlText = "select " + StockDbo.CN_S_QUANTITY + ", " + StockDbo.CN_S_DATA + ", "
-				+ StockDbo.CN_S_DIST_01 + "," + StockDbo.CN_S_DIST_02 + "," + StockDbo.CN_S_DIST_03 + ","
-				+ StockDbo.CN_S_DIST_04 + "," + StockDbo.CN_S_DIST_05 + "," + StockDbo.CN_S_DIST_06 + ","
-				+ StockDbo.CN_S_DIST_07 + "," + StockDbo.CN_S_DIST_08 + "," + StockDbo.CN_S_DIST_09 + ","
-				+ StockDbo.CN_S_DIST_10 
-				+ " from " + StockDbo.TABLE_NAME 
-				+ " where " + StockDbo.CN_S_I_ID + " = ? and " 
-				+ StockDbo.CN_S_W_ID + " = ? for update"; //
 		DBMS dbms = TpccContext.getContext().getDBMS();
 		if (dbms.equals(DBMS.MSSQL)) { //mssql not support select ... for update.
 			final String sqlTextMssql = "select " + StockDbo.CN_S_QUANTITY + ", " + StockDbo.CN_S_DATA + ", "
@@ -243,10 +273,27 @@ public class TpccStatements {
 					+ " where " + StockDbo.CN_S_I_ID + " = ? and " 
 					+ StockDbo.CN_S_W_ID + " = ?";
 			return sqlTextSqlite;
+		} else if(dbms.equals(DBMS.IGNITE)) {
+			final String sqlTextSqlite = "select " + StockDbo.CN_S_QUANTITY + ", " + StockDbo.CN_S_DATA + ", "
+					+ StockDbo.CN_S_DIST_01 + "," + StockDbo.CN_S_DIST_02 + "," + StockDbo.CN_S_DIST_03 + ","
+					+ StockDbo.CN_S_DIST_04 + "," + StockDbo.CN_S_DIST_05 + "," + StockDbo.CN_S_DIST_06 + ","
+					+ StockDbo.CN_S_DIST_07 + "," + StockDbo.CN_S_DIST_08 + "," + StockDbo.CN_S_DIST_09 + ","
+					+ StockDbo.CN_S_DIST_10 
+					+ " from " + StockDbo.TABLE_NAME 
+					+ " where " + StockDbo.CN_S_I_ID + " = ? and " 
+					+ StockDbo.CN_S_W_ID + " = ? ";
+			return sqlTextSqlite;
 		} else {
+			final String sqlText = "select " + StockDbo.CN_S_QUANTITY + ", " + StockDbo.CN_S_DATA + ", "
+					+ StockDbo.CN_S_DIST_01 + "," + StockDbo.CN_S_DIST_02 + "," + StockDbo.CN_S_DIST_03 + ","
+					+ StockDbo.CN_S_DIST_04 + "," + StockDbo.CN_S_DIST_05 + "," + StockDbo.CN_S_DIST_06 + ","
+					+ StockDbo.CN_S_DIST_07 + "," + StockDbo.CN_S_DIST_08 + "," + StockDbo.CN_S_DIST_09 + ","
+					+ StockDbo.CN_S_DIST_10 
+					+ " from " + StockDbo.TABLE_NAME 
+					+ " where " + StockDbo.CN_S_I_ID + " = ? and " 
+					+ StockDbo.CN_S_W_ID + " = ? for update"; //
 			return sqlText;
 		}
-		
 	}
 
 	/**
@@ -273,6 +320,7 @@ public class TpccStatements {
 	 * @return
 	 */
 	public static String newOrderStmt9() {
+		/*
 		final String sqlText = "insert into " + OrderLineDbo.TABLE_NAME + " ( " 
 				+ OrderLineDbo.CN_OL_O_ID + "," 
 				+ OrderLineDbo.CN_OL_D_ID + "," 
@@ -283,7 +331,14 @@ public class TpccStatements {
 				+ OrderLineDbo.CN_OL_QUANTITY + "," 
 				+ OrderLineDbo.CN_OL_AMOUNT + "," 
 				+ OrderLineDbo.CN_OL_DIST_INFO + ") values (?,?,?,?,?,?,?,?,?)";
-		return sqlText;
+				*/
+		StringBuilder sqlText = new StringBuilder().append("insert into ").append(OrderLineDbo.TABLE_NAME).append(" ( ")
+				.append(OrderLineDbo.CN_OL_O_ID).append(",").append(OrderLineDbo.CN_OL_D_ID).append("," )
+				.append(OrderLineDbo.CN_OL_W_ID).append(",").append(OrderLineDbo.CN_OL_NUMBER).append(",")
+				.append(OrderLineDbo.CN_OL_I_ID).append(",").append(OrderLineDbo.CN_OL_SUPPLY_W_ID).append(",")
+				.append(OrderLineDbo.CN_OL_QUANTITY).append(",").append(OrderLineDbo.CN_OL_AMOUNT).append("," )
+				.append(OrderLineDbo.CN_OL_DIST_INFO).append(") values (?,?,?,?,?,?,?,?,?)");
+		return sqlText.toString();
 	}
 	
 	/**

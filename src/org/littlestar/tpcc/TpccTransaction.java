@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +46,7 @@ public class TpccTransaction implements TpccConstants {
 		}
 		
 		TpccContext.CountingOn.set(true);  // 开启事务计数器
+		final LocalDateTime measureStartTime = LocalDateTime.now();
 		TpccHelper.output("Measuring start.");
 		TpccHelper.reportHeader();
 		
@@ -57,20 +60,21 @@ public class TpccTransaction implements TpccConstants {
 			@Override
 			public void run() {
 				TpccContext.CountingOn.set(false);    // 置事务计数器标记为关闭.
+				final LocalDateTime measureStopTime = LocalDateTime.now();
+				Duration measureDuration = Duration.between(measureStartTime, measureStopTime);
+				logger.debug("measure setting: " + measureTime +" secs, really: "+measureDuration.getSeconds()+" secs.");
 				TpccContext.transactionOn.set(false); // 置事务执行标记为关闭.
-				benchmarkExecutor.shutdown();         // 接收新任务, 关闭线程池。
+				benchmarkExecutor.shutdown();        // 接收新任务, 关闭线程池。
 				scheduleExecutor.shutdown();
 			}
 		};
 		scheduleExecutor.schedule(shutdownThread, measureTime, TimeUnit.SECONDS);
-		while (true) {
-			if (!scheduleExecutor.awaitTermination(measureTime + 10, TimeUnit.SECONDS)) {
-				TpccHelper.output("Stoping threads ...");
-				scheduleExecutor.shutdownNow();
-			}
-			TpccHelper.reportFooter(tpccThreads, measureTime);
-			break;
+		if (!scheduleExecutor.awaitTermination(measureTime + 10, TimeUnit.SECONDS)) {
+			TpccHelper.output("Stoping threads ...");
+			scheduleExecutor.shutdownNow();
 		}
+		TpccHelper.reportFooter(tpccThreads, measureTime);
+		TpccContext.getContext().shutdown();
 	}
 	
 	/**
@@ -120,12 +124,12 @@ public class TpccTransaction implements TpccConstants {
 			} else {
 				rs1.close();
 				stmt1.close();
-				throw new NoDataFoundException("NEW-ORDER.1: " + sqlText1 + "; " + w_id + ", " + w_id + ", " + d_id + ", " + c_id
-						+ " (NO_DATA_FOUND)");
+				throw new NoDataFoundException(
+						"NEW-ORDER.1: " + sqlText1 + "; " + w_id + ", " + d_id + ", " + c_id + " (NO_DATA_FOUND)");
 			}
-			if(logger.isTraceEnabled()) {
-				logger.trace("NEW-ORDER.1: " + sqlText1 + "; " + w_id + ", " + w_id + ", " + d_id + ", " + c_id
-						+" ( c_discount= " + c_discount +"; c_last= "+ c_last+ "; c_credit="+c_credit+"; w_tax="+w_tax+" )");
+			if (logger.isTraceEnabled()) {
+				logger.trace("NEW-ORDER.1: " + sqlText1 + "; " + w_id + ", " + d_id + ", " + c_id + " ( c_discount= "
+						+ c_discount + "; c_last= " + c_last + "; c_credit=" + c_credit + "; w_tax=" + w_tax + " )");
 			}
 			rs1.close();
 			stmt1.close();
@@ -294,7 +298,7 @@ public class TpccTransaction implements TpccConstants {
 				double ol_amount = ol_quantity * i_price * (1 + w_tax + d_tax) * (1 - c_discount);
 				
 				String ol_dist_info = "";
-				switch (ol_supply_w_id) {
+				switch (d_id) {
 				case 1: ol_dist_info = s_dist_01; break;
 				case 2: ol_dist_info = s_dist_02; break;
 				case 3: ol_dist_info = s_dist_03; break;
@@ -365,7 +369,9 @@ public class TpccTransaction implements TpccConstants {
 			stmt1.setInt(1, h_amount);
 			stmt1.setInt(2, w_id);
 			int updates = stmt1.executeUpdate();
-			logger.trace("PAYMENT.1: " + sqlText1 + "; " + h_amount + ", " + w_id + "( " + updates + " )");
+			if (logger.isTraceEnabled()) {
+				logger.trace("PAYMENT.1: " + sqlText1 + "; " + h_amount + ", " + w_id + "( " + updates + " )");
+			}
 			stmt1.close();
 
 			// proceed = 2;
@@ -582,7 +588,7 @@ public class TpccTransaction implements TpccConstants {
 				}
 				
 				String h_data = substring(w_name, 10);
-				h_data = h_data + ' ' + substring(d_name, 10) + ' ' + ' ' + ' ' + ' ';
+				h_data = h_data + substring(d_name, 10) + ' ' + ' ' + ' ' + ' ';
 				Timestamp h_date = TpccHelper.getTimestamp();
 				final String sqlText11 = TpccStatements.paymentStmt11();
 				final PreparedStatement stmt11 = connection.prepareStatement(sqlText11);

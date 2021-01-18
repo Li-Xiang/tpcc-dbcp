@@ -122,7 +122,9 @@ public class TpccThread implements Runnable, TpccConstants {
 				final LocalDateTime endTime = LocalDateTime.now();
 				final Duration duration = Duration.between(beginTime, endTime);
 				final long runTime = duration.toMillis();
-				logger.debug("New-order transaction done ( " + runTime + " ms ), seccess = " + success);
+				if(logger.isDebugEnabled()) {
+					logger.debug("New-order transaction done ( " + runTime + " ms ), seccess = " + success);
+				}
 				
 				if (TpccContext.CountingOn.get()) {
 					if (success) {
@@ -136,7 +138,6 @@ public class TpccThread implements Runnable, TpccConstants {
 					}
 				}
 			} catch (NoDataFoundException e) {
-				System.out.println(e.toString());
 				logger.debug("New-order transaction failed with 'NO_DATA_FOUND'", e);
 				break; //不重试, 因为传参不变, 结果肯定还是NO_DATA_FOUND, retry没有意义.
 			} catch (Throwable e) {
@@ -149,10 +150,7 @@ public class TpccThread implements Runnable, TpccConstants {
 		}
 		
 		if (TpccContext.CountingOn.get()) {
-			
-			System.out.println("Retry-> " +i);
 			noFailureCount++;
-			//System.out.println(Thread.currentThread().getId()+"F => " +noFailureCount); 
 		}
 	}
 	
@@ -221,7 +219,9 @@ public class TpccThread implements Runnable, TpccConstants {
 				final LocalDateTime endTime = LocalDateTime.now();
 				final Duration duration = Duration.between(beginTime, endTime);
 				final long runTime = duration.toMillis();
-				logger.debug("Payment transaction done ( " + runTime + " ms ), seccess = " + success);
+				if(logger.isDebugEnabled()) {
+					logger.debug("Payment transaction done ( " + runTime + " ms ), seccess = " + success);
+				}
 				if (TpccContext.CountingOn.get()) {
 					if (success) {
 						pyCounterLock.lock();
@@ -304,7 +304,9 @@ public class TpccThread implements Runnable, TpccConstants {
 				final LocalDateTime endTime = LocalDateTime.now();
 				final Duration duration = Duration.between(beginTime, endTime);
 				final long runTime = duration.toMillis();
-				logger.debug("Order-Status transaction done ( " + runTime + " ms ), seccess = " + success);
+				if(logger.isDebugEnabled()) {
+					logger.debug("Order-Status transaction done ( " + runTime + " ms ), seccess = " + success);
+				}
 				if (TpccContext.CountingOn.get()) {
 					if (success) {
 						osCounterLock.lock();
@@ -380,7 +382,9 @@ public class TpccThread implements Runnable, TpccConstants {
 				final LocalDateTime endTime = LocalDateTime.now();
 				final Duration duration = Duration.between(beginTime, endTime);
 				final long runTime = duration.toMillis();
-				logger.debug("Delivery transaction done ( " + runTime + " ms ), seccess = " + success);
+				if(logger.isDebugEnabled()) {
+					logger.debug("Delivery transaction done ( " + runTime + " ms ), seccess = " + success);
+				}
 				if (TpccContext.CountingOn.get()) {
 					if (success) {
 						dlCounterLock.lock();
@@ -457,7 +461,9 @@ public class TpccThread implements Runnable, TpccConstants {
 				final LocalDateTime endTime = LocalDateTime.now();
 				final Duration duration = Duration.between(beginTime, endTime);
 				final long runTime = duration.toMillis();
-				logger.debug("Stock-Level transaction done ( " + runTime + " ms ), seccess = " + success);
+				if(logger.isDebugEnabled()) {
+					logger.debug("Stock-Level transaction done ( " + runTime + " ms ), seccess = " + success);
+				}
 				if (TpccContext.CountingOn.get()) {
 					if (success) {
 						slCounterLock.lock();

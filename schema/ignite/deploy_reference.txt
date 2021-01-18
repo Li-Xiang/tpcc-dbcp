@@ -1,0 +1,60 @@
+1. download jdbc
+Copy ignite-core-*.jar which in Apache ignite 's libs directory to tpcc-dbcp's lib directory.
+
+2. create TPCC schema.
+
+Edit ignite's  'default-config.xml' 
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<bean class="org.apache.ignite.configuration.IgniteConfiguration">
+    <property name="sqlConfiguration">
+        <bean class="org.apache.ignite.configuration.SqlConfiguration">
+            <property name="sqlSchemas">
+                <list>
+                    <value>TPCC</value>
+                </list>
+            </property>
+        </bean>
+    </property>
+</bean>
+</beans>
+
+3. create tables
+
+sqlline.sh --color=true --verbose=true -u jdbc:ignite:thin://192.168.56.1/TPCC
+0: jdbc:ignite:thin://192.168.56.1/TPCC> !run create_table.sql
+
+4. perpare datasource config file.
+
+{
+  "ignite-ds-1": {
+    "driverClassName": "org.apache.ignite.IgniteJdbcThinDriver",
+    "url": "jdbc:ignite:thin://192.168.56.1/TPCC",
+    "maxTotal": "300",
+    "initialSize": "1",
+    "maxIdle": "300",
+    "maxWaitMillis": "60000",
+    "validationQuery": "select 1",
+    "removeAbandonedOnBorrow": "true",
+    "logAbandoned": "true",
+    "testOnBorrow": "false",
+    "testWhileIdle": "true",
+    "testOnReturn": "false",
+    "removeAbandonedTimeout": "180",
+    "removeAbandonedOnMaintenance": "true"
+  }
+}
+
+5. load tpcc data
+$ tpcc.cmd -d ignite-ds-1 --warehouses 5 --threads 10 load
+
+6. start TPC-C test
+$ ./tpcc.sh -d ignite-ds-1 --warehouses 10 --warmup 60 --threads 10 --measure-time 3600
+
+

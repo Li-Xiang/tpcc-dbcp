@@ -6,7 +6,7 @@ create table warehouse (
   w_city varchar(20),
   w_state char(2),
   w_zip char(9),
-  w_tax decimal(4,2),
+  w_tax decimal(4,4),
   w_ytd decimal(12,2),
   constraint warehouse_pk primary key (w_id)
 );
@@ -27,7 +27,7 @@ create table customer (
   c_since timestamp,
   c_credit char(2),
   c_credit_lim bigint,
-  c_discount decimal(4,2),
+  c_discount decimal(4,4),
   c_balance decimal(12,2),
   c_ytd_payment decimal(12,2),
   c_payment_cnt smallint,
@@ -45,7 +45,7 @@ create table district (
   d_city varchar(20),
   d_state char(2),
   d_zip char(9),
-  d_tax decimal(4,2),
+  d_tax decimal(4,4),
   d_ytd decimal(12,2),
   d_next_o_id int,
   constraint district_pk primary key (d_w_id, d_id)

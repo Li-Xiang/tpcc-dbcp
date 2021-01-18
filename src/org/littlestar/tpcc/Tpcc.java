@@ -1,6 +1,8 @@
 package org.littlestar.tpcc;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -73,7 +75,7 @@ public class Tpcc implements TpccConstants {
 		int warmup         = 60;
 		int warehouses     = 5;
 		int threads        = 1;
-		int measureTime    = 3600;
+		int measureTime    = 1200;
 		int reportInterval = 20;
 		Level level    = Level.ERROR;
 		String command = RUN_COMMAND;
@@ -163,7 +165,7 @@ public class Tpcc implements TpccConstants {
 		}
 
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Log4JLogger");
-		Log4jHelper.newHelper(Level.ALL).withConsoleAppender(level).init();
+		Log4jHelper.newHelper(Level.ALL).withConsoleAppender(level).setup();
 		final Log logger = LogFactory.getLog(Tpcc.class);
 		
 		logger.debug("Command line input -> Command: " + command
@@ -196,12 +198,16 @@ public class Tpcc implements TpccConstants {
 		if (warehouses < 1) warehouses = 1;
 		if(command.equalsIgnoreCase(LOAD_COMMAND)) {
 			TpccContext.getContext().setWarehouses(warehouses);
+			Connection connection = dataSource.getConnection();
+			DatabaseMetaData dbMetaData =  connection.getMetaData();
 			message.append("Loading the test data with the following options:")
-			       .append("\n  [data-source]  : ").append(dataSourceName)
-			       .append("\n  [threads]      : ").append(threads)
-			       .append("\n  [connection]   : ").append(dataSource.getMaxTotal()).append(" (max.)")
-			       .append("\n  [warehouse]    : ").append(warehouses)
-			       .append("\n  [log-level]    : ").append(level.toString().toLowerCase())
+			       .append("\n  [data-source]     : ").append(dataSourceName)
+			       .append("\n  [db product]      : ").append(dbMetaData.getDatabaseProductName())
+			       .append("\n  [db version]      : ").append(dbMetaData.getDatabaseMajorVersion()).append(".").append(dbMetaData.getDatabaseMinorVersion())
+			       .append("\n  [threads]         : ").append(threads)
+			       .append("\n  [connection]      : ").append(dataSource.getMaxTotal()).append(" (max.)")
+			       .append("\n  [warehouse]       : ").append(warehouses)
+			       .append("\n  [log-level]       : ").append(level.toString().toLowerCase())
 			       .append("\n......"); 
 			TpccHelper.output(message);
 			message.setLength(0);
@@ -222,8 +228,12 @@ public class Tpcc implements TpccConstants {
 			// 跑测试场景中, 指定的仓库数量不能超过数据库中实际的仓库数量, 且数据库仓库表不能为空.
 			warehouses = Math.min(wareRows, warehouses);
 			TpccContext.getContext().setWarehouses(warehouses);
+			Connection connection = dataSource.getConnection();
+			DatabaseMetaData dbMetaData =  connection.getMetaData();
 			message.append("Running the test with the following options:")
 			       .append("\n  [data-source]     : ").append(dataSourceName)
+			       .append("\n  [db product]      : ").append(dbMetaData.getDatabaseProductName())
+			       .append("\n  [db version]      : ").append(dbMetaData.getDatabaseMajorVersion()).append(".").append(dbMetaData.getDatabaseMinorVersion())
 			       .append("\n  [warehouse]       : ").append(warehouses)
 			       .append("\n  [rampup]          : ").append(warmup).append(" (sec.)")
 			       .append("\n  [threads]         : ").append(threads)

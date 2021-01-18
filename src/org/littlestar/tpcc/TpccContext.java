@@ -2,7 +2,7 @@ package org.littlestar.tpcc;
 
 import java.sql.Connection;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
+//import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -13,7 +13,7 @@ public class TpccContext implements TpccConstants {
 	
 	private volatile int warehouses = 1;
 	//Read-Only.
-	private final ReentrantLock dataSourceLock = new ReentrantLock();
+	//private final ReentrantLock dataSourceLock = new ReentrantLock();
 	private final BasicDataSource dataSource;
 	private final DBMS dbms;
 	
@@ -72,14 +72,21 @@ public class TpccContext implements TpccConstants {
 	
 	public Connection getConnection() throws Throwable {
 		Connection connection = null;
-		dataSourceLock.lock();
+		//dataSourceLock.lock();
 		try {
 			connection = dataSource.getConnection();
 		} catch (Throwable e) {
 			throw e;
 		} finally {
-			dataSourceLock.unlock();
+			//dataSourceLock.unlock();
 		}
 		return connection;
+	}
+	
+	public void shutdown() {
+		try {
+			dataSource.close();
+		} catch (Throwable e) {
+		}
 	}
 }

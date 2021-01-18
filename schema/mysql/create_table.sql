@@ -1,8 +1,6 @@
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 
-drop table if exists warehouse;
-
 create table warehouse (
   w_id smallint not null,
   w_name varchar(10), 
@@ -11,12 +9,10 @@ create table warehouse (
   w_city varchar(20), 
   w_state char(2), 
   w_zip char(9), 
-  w_tax decimal(4,2), 
+  w_tax decimal(4,4), 
   w_ytd decimal(12,2),
   constraint warehouse_pk primary key (w_id)
 ) Engine=InnoDB;
-
-drop table if exists district;
 
 create table district (
   d_id tinyint not null, 
@@ -27,13 +23,11 @@ create table district (
   d_city varchar(20), 
   d_state char(2), 
   d_zip char(9), 
-  d_tax decimal(4,2), 
+  d_tax decimal(4,4), 
   d_ytd decimal(12,2), 
   d_next_o_id int,
   constraint district_pk primary key (d_w_id, d_id)
 ) Engine=InnoDB;
-
-drop table if exists customer;
 
 create table customer (
   c_id int not null, 
@@ -51,7 +45,7 @@ create table customer (
   c_since datetime, 
   c_credit char(2), 
   c_credit_lim bigint, 
-  c_discount decimal(4,2), 
+  c_discount decimal(4,4), 
   c_balance decimal(12,2), 
   c_ytd_payment decimal(12,2), 
   c_payment_cnt smallint, 
@@ -59,8 +53,6 @@ create table customer (
   c_data text,
   constraint customer_pk primary key (c_w_id, c_d_id, c_id)
 ) Engine=InnoDB;
-
-drop table if exists history;
 
 create table history (
   h_c_id int, 
@@ -73,16 +65,12 @@ create table history (
   h_data varchar(24) 
 ) Engine=InnoDB;
 
-drop table if exists new_orders;
-
 create table new_orders (
   no_o_id int not null,
   no_d_id tinyint not null,
   no_w_id smallint not null,
   constraint new_orders_pk primary key (no_w_id, no_d_id, no_o_id)
 ) Engine=InnoDB;
-
-drop table if exists orders;
 
 create table orders (
   o_id int not null, 
@@ -95,8 +83,6 @@ create table orders (
   o_all_local tinyint,
   constraint orders_pk primary key (o_w_id, o_d_id, o_id) 
 ) Engine=InnoDB;
-
-drop table if exists order_line;
 
 create table order_line ( 
   ol_o_id int not null, 
@@ -112,8 +98,6 @@ create table order_line (
   constraint order_line_pk primary key(ol_w_id, ol_d_id, ol_o_id, ol_number)
 ) Engine=InnoDB;
 
-drop table if exists item;
-
 create table item (
   i_id int not null, 
   i_im_id int, 
@@ -122,8 +106,6 @@ create table item (
   i_data varchar(50),
   constraint item_pk primary key (i_id)
 ) Engine=InnoDB;
-
-drop table if exists stock;
 
 create table stock (
   s_i_id int not null, 

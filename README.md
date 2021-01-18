@@ -4,7 +4,7 @@ TPC-C for Apache DBCP is a TPC-C benchmark (workload generator), which base on J
 
 ### Features
 - Multiple relationship database support: MySQL, PostgreSQL, Oracle, DB2, MSSQL, Derby(Java DB), SQLite. 
-- Faster TPC-C data generate, by using multi-threads,  batch insert and defer foreign key create.
+- Faster TPC-C data generate (compatible with tpcc-mysql), by using multi-threads,  batch insert and defer foreign key create.
 
 ### Install
 
@@ -49,6 +49,7 @@ To build the jar files, you must use minimum version of Java 8 with Apache ant.
 ```
 $ git clone https://github.com/Li-Xiang/tpcc-dbcp.git
 $ cd tpcc-dbcp
+$ ant clean
 $ ant
 
 ```

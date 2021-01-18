@@ -6,9 +6,7 @@ CREATE INDEX idx_orders ON orders (o_w_id,o_d_id,o_c_id,o_id);
 CREATE INDEX fkey_stock_2 ON stock (s_i_id);
 CREATE INDEX fkey_order_line_2 ON order_line (ol_supply_w_id,ol_i_id);
 
--- 'idx_stock_1' and 'idx_district_1' use for UPDLOCK, please don't changed the index name;
-CREATE INDEX idx_stock_1 ON stock (s_i_id,s_w_id);
-CREATE INDEX idx_district_1 ON district (d_id,d_w_id);
+
 
 ALTER TABLE district  ADD CONSTRAINT fkey_district_1 FOREIGN KEY(d_w_id) REFERENCES warehouse(w_id);
 ALTER TABLE customer ADD CONSTRAINT fkey_customer_1 FOREIGN KEY(c_w_id,c_d_id) REFERENCES district(d_w_id,d_id);

@@ -36,7 +36,8 @@ public class DataSourceHelper {
 	public static final String DERBY_EMBEDDED_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver"; 
 	public static final String DERBY_CLIENT_DRIVER = "org.apache.derby.jdbc.ClientDriver"; 
 	public static final String MSSQL_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-	public static final String DB2_DRIVE = "com.ibm.db2.jcc.DB2Driver";
+	public static final String DB2_DRIVE = "com.ibm.db2.jcc.DB2Driver";;
+	public static final String APACHE_IGNITE_DRIVE = "org.apache.ignite.IgniteJdbcThinDriver";
 	
 	public static final String DEFAULT_CONFIG_ID = "default-data-source";
 	public static final String USERNAME_PARAMETER = "username";
@@ -248,7 +249,7 @@ public class DataSourceHelper {
 		return toJsonString(configurationSet);
 	}
 	
-	public enum DBMS {MySQL, Oracle, Derby, SQLite, MSSQL, PostgreSQL, DB2, Unknown;}
+	public enum DBMS {MySQL, Oracle, Derby, SQLite, MSSQL, PostgreSQL, DB2, IGNITE, Unknown;}
 	
 	public DBMS getDbms(String dsId) {
 		String drive = getParameter(dsId, DRIVER_CLASSNAME_PARAMETER);
@@ -269,6 +270,8 @@ public class DataSourceHelper {
 			return DBMS.MSSQL;
 		case DB2_DRIVE:
 			return DBMS.DB2;
+		case APACHE_IGNITE_DRIVE:
+			return DBMS.IGNITE;
 		default:
 			return DBMS.Unknown;
 		}

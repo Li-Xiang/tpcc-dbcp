@@ -46,6 +46,7 @@
 
 	<target name="clean" depends="init" description="removes build and dist folders">
 		<delete dir="${build.dir}" />
+		<delete file="${dist.jar}" />
 	</target>
 	
 	<target depends="clean" name="cleanall" />

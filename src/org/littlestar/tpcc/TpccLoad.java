@@ -627,7 +627,7 @@ public class TpccLoad implements TpccConstants {
 					c_credit = "GC";
 				}
 				
-				c_discount = RandomHelper.randomDecimal(4, 0.0000, 0.5000);
+				c_discount = RandomHelper.randomDecimal(4, 0.0000, 0.5001);
 				c_data = RandomHelper.randomString(300, 500);
 				
 				stmt1.setInt(1, c_id);
@@ -811,7 +811,7 @@ public class TpccLoad implements TpccConstants {
 				int ol_number = 1;
 				int ol_i_id;
 				int ol_supply_w_id = o_w_id;
-				Timestamp ol_delivery_d;
+				Timestamp ol_delivery_d = null;
 				int ol_quantity = 5;
 				double ol_amount = 0.0d;
 				String ol_dist_info;
@@ -841,6 +841,21 @@ public class TpccLoad implements TpccConstants {
 					stmt3.setString(10, ol_dist_info);
 					//stmt3.execute();
 					stmt3.addBatch();
+					/*if(logger.isTraceEnabled()) {
+						final StringBuilder msg = new StringBuilder();
+						msg.append("Order_Line Wid1 = ").append(w_id).append(": ").append(sqlText3).append("; ")
+							.append(ol_o_id).append(", ")
+							.append(ol_d_id).append(", ")
+							.append(ol_w_id).append(", ")
+							.append(ol_number).append(", ")
+							.append(ol_i_id).append(", ")
+							.append(ol_supply_w_id).append(", ")
+							.append(ol_delivery_d).append(", ")
+							.append(ol_quantity).append(", ")
+							.append(ol_amount).append(", ")
+							.append(ol_dist_info);
+						logger.trace(msg.toString());
+					}*/
 					rows ++;
 				}
 				
