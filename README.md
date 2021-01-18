@@ -8,7 +8,7 @@ TPC-C for Apache DBCP is a TPC-C benchmark (workload generator), which base on J
 
 ### Install
 
-Download the pre-built binary here and then unzip it. it requires minimum of Java 8 at runtime.
+Download the pre-built binary here(https://github.com/Li-Xiang/tpcc-dbcp/tags) and then unzip it. it requires minimum of Java 8 at runtime.
 
 ### Usage
 ```
